@@ -16,7 +16,7 @@ Before starting the measurement series, some parameters have to be defined befor
 	- 	'estimated device precision' - set the estimated/indicated precision of the measuring device.
 	-	'n CHOOSE k strategy' - select the strategy for your acquisition campaign, either n choose k (n: total elements available, k: elements considered for one measurement), or all elements to perform all possible 2^n measurements
 
-Select 'Start' to start the acquisition with the first measurement:
+Select 'Start' to begin the acquisition with the first measurement:
 When the value for the first measurement is determined, enter it to the field 'measured weight' and confirm by enter key.
 The second measurement is selected in the binary list automatically, where each binary number stands for one element to be measured.
 '0' indicates that the element is not considered, '1' shows that the element contributes to the current result.
