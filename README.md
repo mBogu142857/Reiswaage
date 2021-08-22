@@ -14,7 +14,7 @@ Before starting the measurement series, some parameters have to be defined befor
 	- 	'total elements' - enter the total number of elements to be measured into the field
 	- 	'offset element' - you can choose whether an offset element should be considered or not
 	- 	'estimated device precision' - set the estimated/indicated precision of the measuring device.
-	-	'n CHOOSE k strategy' - select the strategy for your acquisition campaign, either n choose k (n: total elements available, k: elements considered for one measurement), or all elements to perform all possible 2^n measurements
+	-	'weighing strategy' - select the strategy for your acquisition campaign, either n choose k (n: total elements available, k: elements considered for one measurement)all elements to perform all possible 2^n measurements, or ternary sequence strategy to do 3^n measurements
 
 Select 'Start' to begin the acquisition with the first measurement:
 When the value for the first measurement is determined, enter it to the field 'measured weight' and confirm by enter key.
