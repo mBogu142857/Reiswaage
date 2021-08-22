@@ -1,0 +1,67 @@
+<deployment-project plugin="plugin.apptool" plugin-version="1.0">
+  <configuration build-checksum="389776824" file="D:\luckycloud\offene Daten\Matlab\superprecision\MeasurementApp\Reiswaage_measurement.prj" location="D:\luckycloud\offene Daten\Matlab\superprecision\MeasurementApp" name="Reiswaage_measurement" target="target.mlapps" target-name="Package App">
+    <param.appname>Reiswaage_measurement</param.appname>
+    <param.authnamewatermark>mb</param.authnamewatermark>
+    <param.email>martin.boguslawski@mailbox.org</param.email>
+    <param.company />
+    <param.icon />
+    <param.icons />
+    <param.summary>Helps to perform a set of measurements for superprecision analysis via linear regression.</param.summary>
+    <param.description>This app guides you through a data acquisition campaign of a Reiswaage measurement, suggesting an effective choice of elements' combinations, giving live feedback to the current resultings, and allowing to store all intermediate or final data. The individual measurements can be skipped, corrected, and re-taken by manual selection, the current state and progress of the campaign can be easily found and picked up at any time.</param.description>
+    <param.screenshot>C:\Users\Martin\AppData\Local\Temp\tp0f3b3128_52b2_4328_a5ad_69da2754fbfe.png</param.screenshot>
+    <param.version>1.0</param.version>
+    <param.products.name>
+      <item>MATLAB</item>
+    </param.products.name>
+    <param.products.id>
+      <item>1</item>
+    </param.products.id>
+    <param.products.version>
+      <item>9.8</item>
+    </param.products.version>
+    <param.platforms />
+    <param.output>${PROJECT_ROOT}</param.output>
+    <param.guid>a8e2674e-0e56-4b5f-9c44-3767e11de3a8</param.guid>
+    <unset>
+      <param.company />
+      <param.icon />
+      <param.icons />
+      <param.version />
+      <param.platforms />
+      <param.output />
+    </unset>
+    <fileset.main>
+      <file>${PROJECT_ROOT}\manage_measurement.mlapp</file>
+    </fileset.main>
+    <fileset.depfun>
+      <file>${PROJECT_ROOT}\createBinMtrx_oneDiff.m</file>
+      <file>${PROJECT_ROOT}\createTernaryMtrx.m</file>
+      <file>${PROJECT_ROOT}\sort_BinMtrx4Experiment.m</file>
+    </fileset.depfun>
+    <fileset.resources />
+    <fileset.package />
+    <build-deliverables>
+      <file location="D:\luckycloud\offene Daten\Matlab\superprecision" name="MeasurementApp" optional="false">D:\luckycloud\offene Daten\Matlab\superprecision\MeasurementApp</file>
+    </build-deliverables>
+    <workflow />
+    <matlab>
+      <root>C:\Program Files\MATLAB\R2020a</root>
+      <toolboxes />
+    </matlab>
+    <platform>
+      <unix>false</unix>
+      <mac>false</mac>
+      <windows>true</windows>
+      <win2k>false</win2k>
+      <winxp>false</winxp>
+      <vista>false</vista>
+      <linux>false</linux>
+      <solaris>false</solaris>
+      <osver>10.0</osver>
+      <os32>false</os32>
+      <os64>true</os64>
+      <arch>win64</arch>
+      <matlab>true</matlab>
+    </platform>
+  </configuration>
+</deployment-project>
