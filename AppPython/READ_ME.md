@@ -2,7 +2,7 @@
 
 ## Version Python and PyCharm
 For developing this tool, we used :
-* Python: v3.7.5
+* Python: v3.9
 * PyCharm: 2020.2.5
 
 ## Content of the project folder
