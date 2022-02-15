@@ -6,4 +6,4 @@ This project shares an app that guides you through a data acquisition series of 
 
 The app was written with the MATLAB app designer, and exported as app installation file to share. This installation file is shared here, as well, but a MATLAB license is necessary for use.
 
-For more details, see the Wiki page of this repository.
+For more details, see the Wiki page of this repository (https://github.com/mbogu142857/Reiswaage).
