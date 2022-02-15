@@ -1,5 +1,5 @@
 pip~=22.0.3
-numpy~=1.22.2
+numpy~=1.19.5
 setuptools~=60.9.1
 PySide2~=5.15.2
 shiboken2~=5.15.2

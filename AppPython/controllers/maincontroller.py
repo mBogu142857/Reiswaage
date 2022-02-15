@@ -214,7 +214,7 @@ class MainController(QObject):
     def measured_weight_edit_field_value_changed(self):
 
         self.back_engine.measure.measValues[self.back_engine.measure.currMsrmt] = \
-            float(self.main_view.measuredweightEditField.Value)
+            float(self.main_view.measuredweightEditField.text())
 
         # % Value
         # changed
