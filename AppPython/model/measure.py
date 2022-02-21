@@ -1,21 +1,31 @@
 from marshmallow import Schema, fields, post_load, post_dump, pprint
 import numpy as np
+import matplotlib.pyplot as plt
+import copy
 
 class Measure:
-    def __init__(self, bin_matrix: int = [], measValues: float=[], timeStamp: float=[],
-                 linRegRes: float=[], lastonscle: int = [], B_out: int = [],
-                 sorted_binMtrx: int = [], T_out: int = [], currMsrmt : int = 0):
+    def __init__(self, bin_matrix: int = [], measValues: float = [], timestamp: str = [],
+                 linRegRes: float = [], current_on_scale: int = 0, last_on_scale: int = 0,
+                 B_out: int = [], sorted_binMtrx: int = [], T_out: int = [],
+                 current_measurement: int = 0, measurements_idx: int = 0, color_tot_values=[],
+                 color_evaluation_values=[], b_ternary: bool = False):
 
         self.measValues = measValues
-        self.timeStamp = timeStamp
+        self.timestamp = timestamp
         self.linRegRes = linRegRes
-        self.lastonscle = lastonscle
+        self.current_on_scale = current_on_scale  # holds current elements-on-scale status
+        self.last_on_scale = last_on_scale
 
         self.bin_matrix = bin_matrix
         self.B_out = B_out
         self.sorted_binMtrx = sorted_binMtrx
         self.T_out = T_out
-        self.currMsrmt = currMsrmt
+        self.current_measurement = current_measurement
+        self.measurements_idx = measurements_idx  # index list of performed measurements
+        self.color_tot_values = color_tot_values  # colors for plotting
+        self.color_evaluation_values = color_evaluation_values  # colors for plotting
+        self.b_ternary = b_ternary  # boolean for sequence basis selection: true for ternary, false for binary
+
         # n_el % number of elements
         # b_offs % boolean for offset status
         # est_prec % estimated precision (reading precision) of measuring device
@@ -56,7 +66,7 @@ class Measure:
         :return: None
         """
 
-        if k_strat < len(elem_list):
+        if k_strat < len(elem_list) and k_strat > 0:
             self.bin_matrix = self.get_bin_matrix_one_diff(settings.n_el)
 
             if k_strat < len(elem_list) - 2:
@@ -75,15 +85,17 @@ class Measure:
         self.measValues = np.empty((np.size(self.bin_matrix, 0), 1))
         self.measValues[:] = np.NaN
 
-        self.timeStamp = np.empty((np.size(self.bin_matrix, 0), 1))
-        self.timeStamp[:] = np.NaN
+        # self.timestamp = np.empty((np.size(self.bin_matrix, 0), 1))
+        # self.timestamp[:] = np.NaN
+        self.timestamp = ["" for i in range(np.size(self.bin_matrix, 0))]
 
         self.linRegRes = np.empty((np.size(self.bin_matrix, 1), len(self.measValues)))
         self.linRegRes[:] = np.NaN
 
-        #self.Clr_totVal = .8 * hsv(np.size(self.measValues)) ## QUI
-        #self.Clr_elVal = .8 * hsv(np.size(self.binMatrix, 1) + 1) ## QUI
-        self.lastonscale = np.zeros((1, np.size(self.bin_matrix, 1)))
+
+        self.color_tot_values = 0.8 * np.array(plt.cm.hsv(np.size(self.measValues)))
+        self.color_evaluation_values = 0.8 * np.array(plt.cm.hsv(np.size(self.bin_matrix, 1) + 1))
+        self.last_on_scale = np.zeros((1, np.size(self.bin_matrix, 1)))
 
         #     function
         #     bM = getBinMatrix(app)
@@ -119,7 +131,7 @@ class Measure:
 
         oldB = np.zeros((1, n), dtype=bool)
 
-        import copy
+
         for kk in range(0, n):
             newB = np.flipud(copy.deepcopy(oldB))
             newB[:, kk] = ~newB[:, kk]
@@ -217,13 +229,13 @@ class Measure:
         T_old[-1] = 1
 
         for ii in range(1, n-1):
-            T_new = np.row_stack((np.column_stack((-1*np.ones(np.size(T_old, 0), 1), T_old)),
-                                  np.column_stack((np.zeros(np.size(T_old, 0), 1), T_old)),
-                                  np.column_stack((np.ones(np.size(T_old, 0), 1), T_old))))
+            T_new = np.row_stack((np.column_stack((-1*np.ones((np.size(T_old, 0), 1)), T_old)),
+                                  np.column_stack((np.zeros((np.size(T_old, 0), 1)), T_old)),
+                                  np.column_stack((np.ones((np.size(T_old, 0), 1)), T_old))))
 
             T_old = T_new
 
-        self.T_out = T_old
+        return T_old
 
         # function
         # T_out = createTernaryMtrx(n)

@@ -4,6 +4,7 @@ import numpy as np
 from marshmallow import Schema, fields, post_load, post_dump, pprint
 from model.settings import SettingsSchema, Settings
 import copy
+
 from model.settings import Settings
 from model.measure import Measure
 

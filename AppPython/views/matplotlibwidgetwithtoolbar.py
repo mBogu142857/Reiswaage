@@ -1,12 +1,11 @@
-from PySide2.QtWidgets import QWidget, QSizePolicy, QVBoxLayout
-from PySide2.QtCore import Qt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as Canvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Toolbar
 from matplotlib.widgets import Slider
-import functools
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+from PySide2.QtWidgets import QWidget, QSizePolicy, QVBoxLayout
+from PySide2.QtCore import Qt
+
 
 class MplCanvas(Canvas):
     def __init__(self, parent: QWidget = None):
@@ -24,12 +23,9 @@ class MplCanvas(Canvas):
 
     def add_slider(self, ax_link1, ax_link2, label, valmin, valmax, orientation):
         self.slider = Slider(ax=ax_link1, label=label, valmin=valmin, valmax=valmax, orientation=orientation, valinit=4000)
-        # self.slider.on_changed(functools.partial(self.set_axis, ax_link2))
         return self.slider
 
     def set_axis(self, ax, val):
-        # print(self.slider.val)
-        # self.axes1.set(xlim=(0, 100), ylim=(0, self.slider.val))
         ax.set(ylim=(0, self.slider.val))
 
 class MplWidget_custom(QWidget):
@@ -41,10 +37,6 @@ class MplWidget_custom(QWidget):
 
         self.vbl = QVBoxLayout()  # Set box for plotting
         self.vbl.addWidget(self.canvas)
-       # self.addToolbar = Toolbar(self.canvas, self)  # add toolbar to plot
-       # self.vbl.addWidget(self.addToolbar)
-       # self.vbl.setAlignment(self.addToolbar, Qt.AlignCenter)
-
         self.setLayout(self.vbl)
 
 class MplWidget(QWidget):
@@ -56,10 +48,6 @@ class MplWidget(QWidget):
 
         self.vbl = QVBoxLayout()  # Set box for plotting
         self.vbl.addWidget(self.canvas)
-       # self.addToolbar = Toolbar(self.canvas, self)  # add toolbar to plot
-       # self.vbl.addWidget(self.addToolbar)
-       # self.vbl.setAlignment(self.addToolbar, Qt.AlignCenter)
-
         self.setLayout(self.vbl)
 
 class MplWidgetWithToolBar(QWidget):
@@ -82,7 +70,6 @@ class MplCanvas_trid(Canvas):
     def __init__(self, parent=None, width=8, height=4, dpi=65):
         self.fig = plt.figure(tight_layout=True, figsize=(width, height), dpi=dpi)
         self.fig.tight_layout()
-        # super(MplCanvas_custom, self).__init__(self.fig)
         Canvas.__init__(self, self.fig)
 
         self.setParent(parent)
@@ -100,7 +87,6 @@ class MplCanvas_custom(Canvas):
     def __init__(self, parent=None, width=5, height=4, dpi=65):
         self.fig = Figure(tight_layout=True, figsize=(width, height), dpi=dpi)
         self.fig.tight_layout()
-        # super(MplCanvas_custom, self).__init__(self.fig)
         Canvas.__init__(self, self.fig)
 
         self.setParent(parent)
@@ -118,12 +104,9 @@ class MplCanvas_custom(Canvas):
 
     def add_slider(self, ax_link1, ax_link2, label, valmin, valmax, orientation):
         self.slider = Slider(ax=ax_link1, label=label, valmin=valmin, valmax=valmax, orientation=orientation, valinit=4000)
-        #self.slider.on_changed(functools.partial(self.set_axis, ax_link2))
         return self.slider
 
     def set_axis(self, ax, val):
-        #print(self.slider.val)
-        # self.axes1.set(xlim=(0, 100), ylim=(0, self.slider.val))
         ax.set(ylim=(0, self.slider.val))
 
 class MplWidgetWithToolBar_custom(QWidget):
@@ -153,7 +136,6 @@ class NoteBuilder:
 
         self.annot.set_visible(False)
         self.str = str
-        # self.cid = line.figure.canvas.mpl_connect('motion_notify_event', self.annotate)
 
         self.cid = line.figure.canvas.mpl_connect(str_event, self.annotate)
 
@@ -162,7 +144,6 @@ class NoteBuilder:
 
     def change_annot(self, str):
         self.str = str
-        # self.annot.set_visible(False)
 
     def update_annot(self, x, y, ind):
             self.annot.xy = (x[ind["ind"][0]], y[ind["ind"][0]])

@@ -62,7 +62,9 @@ class SliderCustom(QSlider):
                 qp.drawText(contents.x() + 7 * font.pointSize(), y_inc + font.pointSize() / 2, '{0:3}'.format(slider_step[i]))
                 qp.drawLine(contents.x() + 2 * font.pointSize(), y_inc, contents.x() + contents.width(), y_inc)
                 y_inc -= groove_y / (max - min)
+
             else:
+
                 qp.drawText(contents.x() + 7 * font.pointSize(), y_inc + font.pointSize() / 2, '{0:3}'.format(slider_step[i]))
                 qp.drawLine(contents.x() + 2 * font.pointSize(), y_inc, contents.x() + contents.width()-15, y_inc)
                 y_inc -= groove_y / (max - min)

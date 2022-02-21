@@ -1,2 +1,2 @@
-from maincontroller import MainController
+from .maincontroller import MainController
 

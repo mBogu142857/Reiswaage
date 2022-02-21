@@ -1,15 +1,11 @@
-from PySide2.QtWidgets import QCheckBox,QLineEdit,QComboBox,QTextEdit, QApplication, QWidget, QPushButton, QVBoxLayout, QTableWidget, QGridLayout, QLabel,\
-     QTabWidget, QListWidget, QTableWidgetItem, QHBoxLayout, QSizePolicy, QSpacerItem, QAbstractItemView, QSlider
-from PySide2.QtGui import QIcon
+from PySide2.QtWidgets import QCheckBox, QLineEdit, QComboBox, QApplication, QWidget, QPushButton, QVBoxLayout, \
+    QGridLayout, QLabel, QListWidget, QHBoxLayout
 from PySide2.QtCore import Qt
 from PySide2 import QtGui, QtCore
-from matplotlibwidgetwithtoolbar import MplWidget
-from matplotlibwidgetwithtoolbar import MplWidgetWithToolBar_custom
-from matplotlibwidgetwithtoolbar import MplWidget_custom
-from matplotlibwidgetwithtoolbar import MplCanvas_trid
-from graphics import *
 import sys
-from SliderCustom import SliderCustom
+from .matplotlibwidgetwithtoolbar import MplCanvas_trid
+from .SliderWithTick import LabeledSlider
+
 
 class MainView(QWidget):
     def __init__(self):
@@ -25,11 +21,42 @@ class MainView(QWidget):
         #self.modify_layouts()
         #self.setup_connections()
 
+    def clear(self):
+        # self.totalelementsEditField.setReadOnly(False)
+        self.totalelementsEditField.setReadOnly(False)
+        self.totalelementsEditField.setEnabled(True)
+
+        self.totalelementsEditField.setText("0")
+        self.estimateddeviceprecisionEditField.setReadOnly(False)
+        self.estimateddeviceprecisionEditField.setEnabled(True)
+
+        self.estimateddeviceprecisionEditField.setText("0.1")
+        self.measuredweightEditField.setReadOnly(True)
+        self.measuredweightEditField.setEnabled(False)
+        self.measuredweightEditField.setText("")
+        self.measurementsdoneGauge.setEnabled(False)
+        self.start_button.setEnabled(True)
+        self.save_button.setEnabled(False)
+        self.offsetelementCheckBox.setCheckable(True)
+        self.offsetelementCheckBox.setCheckState(QtCore.Qt.Unchecked)
+
+        self.listofmeasurementsListBox.clear()
+        self.masselementsonscaleEditField.setText("")
+        self.numberofelementsonscaleTextField.setText("")
+        self.weighing_strategy_drop_down.setEnabled(True)
+
+        # self.measurementsdoneGauge.maximum = 3
+        # self.measurementsdoneGauge.labels = ["", "", "", ""]
+        self.measurementsdoneGauge.minimum = 0
+        self.measurementsdoneGauge.maximum = 5
+        self.measurementsdoneGauge.labels = ["0", "1", "2", "3", "4", "5"]
+
+        self.measurementsdoneGauge.sl.setValue(0)
+
     def setup_gui_settings(self):
         self.setMinimumSize(900, 500)
+        icon = QtGui.QIcon("logo.png")
 
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("logo.PNG"))
         self.setWindowIcon(icon)
         self.setWindowTitle("App")
 
@@ -40,8 +67,7 @@ class MainView(QWidget):
         self.offsetelementLabel = QLabel('offset element')
         self.reset_button = QPushButton("")
         self.icon_reset_button = QtGui.QIcon()
-        self.icon_reset_button.addPixmap(QtGui.QPixmap("reset.png"))
-        self.reset_button.setIcon(self.icon_reset_button) # https://www.flaticon.com/premium-icon/reset_2618245?term=load&page=1&position=10&page=1&position=10&related_id=2618245&origin=search
+        self.reset_button.setIcon(QtGui.QIcon("reset.png"))
 
         self.estimateddeviceprecisionLabel = QLabel('estimated device precision')
         self.estimateddeviceprecisionEditField = QLineEdit('0.1')
@@ -54,10 +80,13 @@ class MainView(QWidget):
         self.masselementsonscaleEditField = QLineEdit('')
 
         self.removeelementsListBoxLabel = QLabel('remove element(s)')
-        self.addelementsListBoxLabel = QLabel('add elements(s)')
+        self.removeelementsListBoxLabel.setStyleSheet("color: red")
 
-        self.removeelementsListBox = QTextEdit()
-        self.addelementsListBox = QTextEdit()
+        self.addelementsListBoxLabel = QLabel('add elements(s)')
+        self.addelementsListBoxLabel.setStyleSheet("color: green")
+
+        self.removeelementsListBox = QListWidget()
+        self.addelementsListBox = QListWidget()
 
         self.measuredweightLabel = QLabel('measured weight')
 
@@ -65,7 +94,7 @@ class MainView(QWidget):
         self.save_button = QPushButton("Save")
         self.measuredweightEditField = QLineEdit()
         self.listofmeasurementsListBox = QListWidget()
-        self.measurementsdoneGauge = SliderCustom(Qt.Vertical)
+        self.measurementsdoneGauge = LabeledSlider(orientation=Qt.Vertical) # QSlider(Qt.Vertical)#SliderCustom(Qt.Vertical)
         self.plot = MplCanvas_trid()
 
     def modify_widgets(self):

@@ -1,9 +1,9 @@
 pyinstaller.exe ^
     --clean ^
+    --hidden-import=matplotlib ^
     --hidden-import=PySide2 ^
     --hidden-import=PySide2.QtXml ^
     --hidden-import=scipy ^
-    --hidden-import=matplotlib ^
     --hidden-import=marshmallow ^
     --hidden-import=peakutils ^
     --hidden-import=pandas ^

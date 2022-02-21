@@ -3,13 +3,16 @@ from views import MainView
 from PySide2 import QtCore
 from tkinter import filedialog
 import numpy as np
+from time import strftime
+from tkinter import messagebox as mbox
 import matplotlib.pyplot as plt
-
+import copy
 import time
+
+from scipy.special import comb
+
 from model.back_engine import BackEngine
 
-import copy
-from scipy.special import comb
 
 class MainController(QObject):
     def __init__(self):
@@ -22,7 +25,8 @@ class MainController(QObject):
         self.main_view = MainView()
 
         # Start-up function
-        self.startup_function()
+        self.main_view.clear()
+        # self.startup_function()
 
         # Make visible the GUI
         self.main_view.show()
@@ -43,6 +47,8 @@ class MainController(QObject):
         self.main_view.save_button.clicked.connect(self.save_button_pushed)
         
     def startup_function(self):
+        self.measuredweightEditField.setEnabled(False)
+
         self.main_view.totalelementsEditField.setReadOnly(False)
         self.main_view.totalelementsEditField.setText("0")
 
@@ -70,7 +76,13 @@ class MainController(QObject):
         self.main_view.totalelementsEditField.setEnabled(False)
         self.main_view.estimateddeviceprecisionEditField.setEnabled(False)
         self.main_view.measuredweightEditField.setEnabled(True)
+        self.main_view.measuredweightEditField.setReadOnly(False)
         self.main_view.measurementsdoneGauge.setEnabled(True)
+
+        # self.main_view.measurementsdoneGauge.setTickPosition(np.linspace(0,
+        #                                                                  int(self.main_view.totalelementsEditField.text())-1,
+        #                                                                  int(self.main_view.totalelementsEditField.text())))
+
         #self.main_view.measurementsdoneGauge.setText("0") ## QUI
         self.main_view.start_button.setEnabled(False)
         self.main_view.save_button.setEnabled(True)
@@ -86,9 +98,12 @@ class MainController(QObject):
 
         est_prec = float(self.main_view.estimateddeviceprecisionEditField.text())
         self.back_engine.measure.k_strat = self.main_view.weighing_strategy_drop_down.currentIndex()+1
+
         self.back_engine.measure.elem_list = [self.main_view.weighing_strategy_drop_down.itemText(i) for i
                                               in range(self.main_view.weighing_strategy_drop_down.count())]
+
         self.back_engine.set_settings_param(n_el, b_offs, est_prec)
+
         self.back_engine.measure.get_bin_matrix(self.back_engine.measure.k_strat,
                                                 self.back_engine.measure.elem_list,
                                                 self.back_engine.settings)
@@ -103,6 +118,27 @@ class MainController(QObject):
         self.main_view.listofmeasurementsListBox.clear()
         self.main_view.listofmeasurementsListBox.addItems(ListItems)
 
+        self.main_view.measurementsdoneGauge.maximum = int(len(ListItems)) #setMaximum(int(len(ListItems)))
+        self.main_view.measurementsdoneGauge.labels = [str(x) for x in range(0, int(len(ListItems))+1)]
+        self.main_view.measurementsdoneGauge.sl.setValue(0)
+
+        # from PySide2.QtGui import QPainter, QPen, QFont, Qt
+        #
+        # qp = QPainter(self)
+        # pen = QPen()
+        # pen.setWidth(2)
+        # pen.setColor(Qt.black)
+        #
+        # qp.setPen(pen)
+        # font = QFont('Times', 10)
+        # qp.setFont(font)
+        # rect = self.main_view.measurementsdoneGauge.geometry()
+        # for i in range(len(int(len(ListItems)))):
+        #     qp.drawText(QtCore.QPoint(rect.width() / 2 - font.pointSize(), rect.height() - 5), str(i))
+
+        # for i in range(len(int(len(ListItems)))):
+        #     self.main_view.measurementsdoneGauge.paintEvent(1 * 1000)qp.drawText(QtCore.QPoint(rect.width() / 2 - font.pointSize(), rect.height() - 5), str(i))
+
         ## Not sure of the difference between addItemsData and addItems
         # self.main_view.listofmeasurementsListBox.addItems(
         #     list(np.linspace(1, np.size(self.back_engine.measure.bin_matrix, 0),
@@ -112,7 +148,7 @@ class MainController(QObject):
 
         self.perform_measurement
 
-        """ started to convert the code but still a bit to do
+        """ #started to convert the code but still a bit to do
         # plot preparation
         #self.main_view.plot.ax3.scatter(np.NaN, 1, 16, 'filled')
         # hold(app.UIAxes1, 'on');
@@ -120,7 +156,7 @@ class MainController(QObject):
                                        [1, 1] * self.back_engine.settings.est_prec / 2, 'r:',
                                        [0, np.size(self.back_engine.measure.bin_matrix, 0) + 1],
                                        [1, 1] * (-self.back_engine.settings.est_prec / 2), 'r:')
-        # hold(app.UIAxes1, 'off');
+         hold(app.UIAxes1, 'off');
         self.main_view.plot.ax1.title(("%g " + np.NaN(1, np.size(self.back_engine.measure.bin_matrix, 1))))
         self.main_view.plot.ax1.xlabel("# measurement")
         self.main_view.plot.ax1.ylabel("residuals")
@@ -212,9 +248,55 @@ class MainController(QObject):
         # end
 
     def measured_weight_edit_field_value_changed(self):
-
-        self.back_engine.measure.measValues[self.back_engine.measure.currMsrmt] = \
+        """
+        Callback for the modification to the edit file measured_weight:
+        - update of the selection of the listbox with instructions
+        - update of the measure
+        - update of the slider (measurement Gauge)
+        - update of the graphs
+        :return: None
+        """
+        try:
             float(self.main_view.measuredweightEditField.text())
+
+        except:
+            return
+
+        self.back_engine.measure.measValues[self.back_engine.measure.current_measurement] = \
+            float(self.main_view.measuredweightEditField.text())
+
+
+        self.back_engine.measure.timestamp[self.back_engine.measure.current_measurement] = strftime("%T")
+        self.back_engine.measure.last_on_scale = self.back_engine.measure.current_on_scale
+
+        if np.sum(np.isnan(self.back_engine.measure.measValues)) == 0:
+
+            mbox.showinfo('Measurements done', 'All measurements were performed. Change data for currently selected'
+                                               ' measurement or click Save button for data export.')
+
+        else:
+            lw = self.main_view.listofmeasurementsListBox
+            items = []
+            for x in range(lw.count() - 1):
+                items.append(lw.item(x))
+
+            if self.main_view.listofmeasurementsListBox.selectedIndexes()[0].row() == np.size(items) \
+                    or ~np.isnan(self.back_engine.measure.measValues[self.main_view.listofmeasurementsListBox.selectedIndexes()[0].row() + 1]):
+
+                self.main_view.listofmeasurementsListBox.setCurrentRow(np.where(np.isnan(self.back_engine.measure.measValues) == 1)[0][0])
+
+            else:
+                self.main_view.listofmeasurementsListBox.setCurrentRow(self.main_view.listofmeasurementsListBox.selectedIndexes()[0].row() + 1)
+                # self.main_view.listofmeasurementsListBox.Value = self.main_view.listofmeasurementsListBox.Value + 1
+
+        self.main_view.measurementsdoneGauge.sl.setValue(np.sum(~np.isnan(self.back_engine.measure.measValues)))
+        # self.main_view.listofmeasurementsListBox.scroll(self.main_view.listofmeasurementsListBox.Value)
+
+        self.back_engine.measure.measurements_idx = np.column_stack((self.back_engine.measure.measurements_idx,
+                                                    np.sum(~np.isnan(self.back_engine.measure.measValues))))
+
+        self.perform_measurement()
+        self.plot_current_results()
 
         # % Value
         # changed
@@ -222,6 +304,7 @@ class MainController(QObject):
         # function
         # EnterButtonPushed(app, event)
         # app.measValues(app.currMsrmt) = str2double(app.measuredweightEditField.Value);
+
         # app.timeStamp(app.currMsrmt) = now;
         # app.lastonscale = app.currentonscale;
         # if sum(isnan(app.measValues)) == 0
@@ -244,6 +327,72 @@ class MainController(QObject):
         #
         # app.performMeasurement;
         # app.plotCurrentResults;
+        # end
+
+    def plot_current_results(self):
+        # pass
+        perfMeas = np.multiply(~np.isnan(self.back_engine.measure.measValues), 1)
+
+        # h_plot1 = app.UIAxes1.Children(3);
+        # h_plot3 = app.UIAxes3.Children(4);
+        # h_plot31 = app.UIAxes3.Children(3);
+        # h_plot4 = app.UIAxes3.Children([1 2]);
+        # h_plot5 = app.UIAxes2.Children;
+
+        lm = np.sum(~np.isnan(self.back_engine.measure.measValues))
+
+        # this_bin_matrix = self.back_engine.measure.bin_matrix[perfMeas, :, :]
+        # this_meas_data = self.back_engine.measure.measValues[~np.isnan(self.back_engine.measure.measValues)]
+        # this_linRegRes = this_bin_matrix / this_meas_data
+        # self.back_engine.measure.linRegRes[:, lm] = this_linRegRes
+
+        # function
+        # plotCurrentResults(app)
+
+        # % perfMeas = app.measurementsdone;
+        # perfMeas = ~isnan(app.measValues);
+        # h_plot1 = app.UIAxes1.Children(3);
+        # h_plot3 = app.UIAxes3.Children(4);
+        # h_plot31 = app.UIAxes3.Children(3);
+        # h_plot4 = app.UIAxes3.Children([1 2]);
+        # h_plot5 = app.UIAxes2.Children;
+        #
+        # lm = sum(~isnan(app.measValues));
+        #
+        # this_bin_matrix = app.binMatrix(perfMeas,:);
+        # this_meas_data = app.measValues(perfMeas);
+        # this_linRegRes = this_bin_matrix\this_meas_data;
+        # app.linRegRes(:, lm) = this_linRegRes;
+        #
+        # result_Matrix = this_bin_matrix * this_linRegRes;
+        # Delta_totMass = (this_meas_data - result_Matrix);
+        # h_plot1.XData = app.listofmeasurementsListBox.ItemsData(perfMeas);
+        # h_plot1.YData = Delta_totMass;
+        # h_plot1.CData = [abs(Delta_totMass) > app.est_prec / 2 zeros(numel(Delta_totMass), 2)];
+        # h_plot1.Parent.Title.String = ['|' sprintf(' %2.3g |', this_linRegRes)];
+        #
+        # h_plot3.XData = this_meas_data;
+        # h_plot3.YData = Delta_totMass;
+        # h_plot3.CData = app.Clr_totVal(perfMeas,:);
+        # h_plot31.XData = this_meas_data(end);
+        # h_plot31.YData = Delta_totMass(end);
+        # h_plot31.Color = app.Clr_totVal(lm,:);
+        #
+        # if ~isequal(h_plot4(1).XData, h_plot3.Parent.XLim)
+        #     h_plot4(1).XData = h_plot3.Parent.XLim;
+        #     h_plot4(2).XData = h_plot3.Parent.XLim;
+        # end
+        #
+        # for jj = 1:size(app.binMatrix, 2)
+        # if lm == 1
+        #     h_plot5(jj).Color = app.Clr_elVal(jj,:);
+        #     end
+        #     h_plot5(jj).XData(end + 1) = lm;
+        #     h_plot5(jj).YData(end + 1) = app.linRegRes(jj, lm) - app.linRegRes(jj, 1);
+        # end
+        #
+        # drawnow;
+        #
         # end
 
     def list_of_measurements_value_changed(self):
@@ -275,7 +424,8 @@ class MainController(QObject):
         self.main_view.plot.ax1.clear()
         self.main_view.plot.ax2.clear()
         self.main_view.plot.ax2.clear()
-        self.startup_function
+        self.main_view.clear()
+        self.back_engine.clear()
 
     def totalelementsEditFieldValueChanged(self):
         """
@@ -287,16 +437,14 @@ class MainController(QObject):
         nCHk_List = []
         for i in range(0, len(nCHk_ItmData)-2):
             k_in = nCHk_ItmData[i]
-            nCHk_List.append("N = (%1iCH%1i)+1 = %1i" % (n, k_in, comb(n, k_in + 1, exact=True) + 1))
+            nCHk_List.append("N = (%1iCH%1i)+1 = %1i" % (n, k_in, comb(n, k_in, exact=True) + 1))
 
-        nCHk_List.append("N = 2^%1i = %1i" % (n, 2 ^ n))
-        nCHk_List.append("N = 3^%1i = %1i" % (n, 3 ^ n))
+        nCHk_List.append("N = 2^%1i = %1i" % (n, np.power(2, n)))
+        nCHk_List.append("N = 3^%1i = %1i" % (n, np.power(3, n)))
 
         self.main_view.weighing_strategy_drop_down.clear()
         for ind in range(0, len(nCHk_ItmData)):
             self.main_view.weighing_strategy_drop_down.addItem(nCHk_List[ind], nCHk_ItmData[ind])
-
-
 
         # n = app.totalelementsEditField.Value;
         # nCHk_ItmData = num2cell(1:n+1);
@@ -312,8 +460,9 @@ class MainController(QObject):
 
         :return:
         """
-        changing_value = int(self.main_view.measuredweightEditField.text())
-        print(changing_value)
+        pass
+        # changing_value = int(self.main_view.measuredweightEditField.text())
+        # print(changing_value)
         # % Value
         # changing
         # function: measuredweightEditField
@@ -356,64 +505,68 @@ class MainController(QObject):
         # end
 
     def perform_measurement(self):
-        print("Here")
-        self.back_engine.measure.currMsrmt = self.main_view.listofmeasurementsListBox.Value
+        # print("Here")
+        self.back_engine.measure.current_measurement = self.main_view.listofmeasurementsListBox.selectedIndexes()[0].row()
 
-        if len(self.back_engine.measure.currMsrmt) >= 0:
-            self.main_view.measuredweightEditField.Value("")
+        if np.isnan(self.back_engine.measure.measValues[self.back_engine.measure.current_measurement]):
+            self.main_view.measuredweightEditField.setText("")
 
         else:
-            self.main_view.measuredweightEditField.setText((self.back_engine.measure.measValues(
-                self.back_engine.measure.currMsrmt) + "%11.4g"))
+            self.main_view.measuredweightEditField.setText((str(self.back_engine.measure.measValues[
+                self.back_engine.measure.current_measurement][0]))) #+ "%11.4g"
 
-        self.back_engine.measure.currentonscale = self.back_engine.measure.bin_matrix[
-                                                  self.back_engine.measure.currMsrmt, :]
+        self.back_engine.measure.current_on_scale = self.back_engine.measure.bin_matrix[
+                                                  self.back_engine.measure.current_measurement, :]
 
         if self.back_engine.measure.b_ternary:
-            list_toAdd = np.where(self.back_engine.measure.currentonscale == 1)[0] - \
-                         self.back_engine.measure.b_offs.T
+            list_toAdd = np.where(self.back_engine.measure.current_on_scale == 1)[0] - \
+                         self.back_engine.settings.b_offs
 
-            list_toRemove = np.where(self.back_engine.measure.currentonscale == -1)[0] - \
-                            self.back_engine.measure.b_offs.T
+            list_toRemove = np.where(self.back_engine.measure.current_on_scale == -1)[0] - \
+                            self.back_engine.settings.b_offs
 
             self.main_view.masselementsonscaleEditField.setText(
-                "%s | %s" % (-(np.where(self.back_engine.measure.lastonscale == -1) -
-                               self.back_engine.measure.b_offs.T),
-                             -(np.where(self.back_engine.measure.lastonscale == 1) -
-                               self.back_engine.measure.b_offs.T)))
+                "%s | %s" % (-(np.where(self.back_engine.measure.last_on_scale == -1)[0] -
+                               self.back_engine.settings.b_offs),
+                             -(np.where(self.back_engine.measure.last_on_scale == 1)[0] -
+                               self.back_engine.settings.b_offs)))
 
             self.main_view.numberofelementsonscaleTextField.setText(
-                "%1i | %1i" % (np.sum(self.back_engine.measure.lastonscale < 0),
-                                     np.sum(self.back_engine.measure.lastonscale > 0)))
+                "%1i | %1i" % (np.sum(self.back_engine.measure.last_on_scale < 0),
+                                     np.sum(self.back_engine.measure.last_on_scale > 0)))
 
         else:
-            self.main_view.masselementsonscaleEditField.Value = str(np.where(self.back_engine.measure.lastonscale) -
-                                                                    self.back_engine.measure.b_offs)
+            self.main_view.masselementsonscaleEditField.Value = str(self.back_engine.measure.last_on_scale -
+                                                                    self.back_engine.settings.b_offs)
 
-            self.main_view.numberofelementsonscaleTextField.Value = str(sum(self.back_engine.measure.lastonscale))
+            self.main_view.numberofelementsonscaleTextField.Value = str(np.sum(self.back_engine.measure.last_on_scale))
 
-            list_toAdd = np.where((self.back_engine.measure.currentonscale -
-                                   self.back_engine.measure.lastonscale) == 1) - \
-                         self.back_engine.measure.b_offs.T
+            list_toAdd = np.where((self.back_engine.measure.current_on_scale -
+                                   self.back_engine.measure.last_on_scale) == 1)[0] - \
+                         self.back_engine.settings.b_offs
 
-            list_toRemove = np.where((self.back_engine.measure.currentonscale -
-                                      self.back_engine.measure.lastonscale) == -1) - \
-                            self.back_engine.measure.b_offs.T
+            list_toRemove = np.where((self.back_engine.measure.current_on_scale -
+                                      self.back_engine.measure.last_on_scale) == -1)[0] - \
+                            self.back_engine.settings.b_offs
 
-        if len(list_toAdd) >= 0:
+        if len(list_toAdd) > 0:
+            self.main_view.removeelementsListBox.clear()
+            self.main_view.addelementsListBox.addItems(str(list_toAdd[0]))
+
+            # self.main_view.addelementsListBox.addItems([str(list_toAdd[0]), str(np.ones((1, np.size([0], 0)))[0][0])])
+
+        else:
             self.main_view.addelementsListBox.clear()
-            self.main_view.addelementsListBox.addItems([""])
+            # self.main_view.addelementsListBox.setText("")
+
+    #str(list_toAdd) + "\r\"" + str(np.ones((1, np.size([0], 0)))[0])
+        if len(list_toRemove) > 0:
+            self.main_view.removeelementsListBox.clear()
+            self.main_view.removeelementsListBox.addItems(str(list_toRemove[0]))
 
         else:
-            self.main_view.addelementsListBox.Items = list(str(list_toAdd),
-                                                           np.ones((1, np.size(list_toAdd)[0])))
-    #
-        if len(list_toRemove) >= 0:
-            self.main_view.removeelementsListBox.Items = {}
+            self.main_view.removeelementsListBox.clear()
 
-        else:
-            self.main_view.removeelementsListBox.Items = list(str(list_toRemove),
-                                                              np.ones((1, np.size(list_toRemove)[0])))
 
         # function
         # performMeasurement(app)
