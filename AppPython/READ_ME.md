@@ -3,7 +3,7 @@
 ## Version Python and PyCharm
 For developing this tool, we used :
 * Python: v3.9
-* PyCharm: 2020.2.5
+* PyCharm: 2020.2.2
 
 ## Content of the project folder
  - **mainapplication.py**: main file running the app (script + GUI visualization)
