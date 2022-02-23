@@ -1,6 +1,7 @@
 from marshmallow import Schema, fields, post_load, post_dump, pprint
 import numpy as np
 import matplotlib.pyplot as plt
+
 import copy
 
 class Measure:

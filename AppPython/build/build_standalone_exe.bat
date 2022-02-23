@@ -5,7 +5,6 @@ pyinstaller.exe ^
     --hidden-import=PySide2.QtXml ^
     --hidden-import=scipy ^
     --hidden-import=marshmallow ^
-    --hidden-import=peakutils ^
     --hidden-import=pandas ^
     --onefile ^
     --specpath=specs ^
