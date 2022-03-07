@@ -37,7 +37,8 @@ class MainController(QObject):
     def connect_controller_slots_to_signals(self):
 
         # Buttons
-        self.main_view.totalelementsEditField.returnPressed.connect(self.totalelementsEditFieldValueChanged)
+        #self.main_view.totalelementsEditField.returnPressed.connect(self.totalelementsEditFieldValueChanged)
+        self.main_view.totalelementsEditField.editingFinished.connect(self.totalelementsEditFieldValueChanged)
         self.main_view.reset_button.clicked.connect(self.reset_button_pushed)
         self.main_view.measuredweightEditField.returnPressed.connect(self.measured_weight_edit_field_value_changed)
         self.main_view.measuredweightEditField.textChanged[str].connect(self.measured_weight_edit_field_value_changing)
