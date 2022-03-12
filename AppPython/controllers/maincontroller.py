@@ -46,6 +46,7 @@ class MainController(QObject):
         self.main_view.weighing_strategy_drop_down.activated.connect(self.weighing_strategy_drop_down_value_changed)
         self.main_view.start_button.clicked.connect(self.start_button_pushed)
         self.main_view.save_button.clicked.connect(self.save_button_pushed)
+        self.main_view.listofmeasurementsListBox.itemSelectionChanged.connect(self.list_of_measurements_value_changed)
         
     # def startup_function(self): # Not used
     #     self.measuredweightEditField.setEnabled(False)
@@ -292,14 +293,15 @@ class MainController(QObject):
                 self.main_view.listofmeasurementsListBox.setCurrentRow(self.main_view.listofmeasurementsListBox.selectedIndexes()[0].row() + 1)
                 # self.main_view.listofmeasurementsListBox.Value = self.main_view.listofmeasurementsListBox.Value + 1
 
-        self.main_view.measurementsdoneGauge.sl.setValue(np.sum(~np.isnan(self.back_engine.measure.measValues)))
-        # self.main_view.listofmeasurementsListBox.scroll(self.main_view.listofmeasurementsListBox.Value)
-
-        self.back_engine.measure.measurements_idx = np.column_stack((self.back_engine.measure.measurements_idx,
-                                                    np.sum(~np.isnan(self.back_engine.measure.measValues))))
-
-        self.perform_measurement()
-        self.plot_current_results()
+        self.list_of_measurements_value_changed()
+        # self.main_view.measurementsdoneGauge.sl.setValue(np.sum(~np.isnan(self.back_engine.measure.measValues)))
+        # # self.main_view.listofmeasurementsListBox.scroll(self.main_view.listofmeasurementsListBox.Value)
+        #
+        # self.back_engine.measure.measurements_idx = np.column_stack((self.back_engine.measure.measurements_idx,
+        #                                             np.sum(~np.isnan(self.back_engine.measure.measValues))))
+        #
+        # self.perform_measurement()
+        # self.plot_current_results()
 
         # % Value
         # changed
@@ -399,7 +401,16 @@ class MainController(QObject):
         # end
 
     def list_of_measurements_value_changed(self):
-        self.back_engine.compute_measure()
+        # self.back_engine.compute_measure()
+
+        self.main_view.measurementsdoneGauge.sl.setValue(np.sum(~np.isnan(self.back_engine.measure.measValues)))
+        # self.main_view.listofmeasurementsListBox.scroll(self.main_view.listofmeasurementsListBox.Value)
+
+        self.back_engine.measure.measurements_idx = np.column_stack((self.back_engine.measure.measurements_idx,
+                                                                     np.sum(~np.isnan(
+                                                                         self.back_engine.measure.measValues))))
+        self.perform_measurement()
+        self.plot_current_results()
 
     def save_button_pushed(self):
         """
@@ -544,12 +555,12 @@ class MainController(QObject):
                                      np.sum(self.back_engine.measure.last_on_scale > 0)))
 
         else:
-            ay_massonscale = np.where(self.back_engine.measure.last_on_scale)[0] + 1 -\
-                                                                    self.back_engine.settings.b_offs
 
-            self.main_view.masselementsonscaleEditField.setText(str(ay_massonscale))
+            self.main_view.masselementsonscaleEditField.setText(str(np.where(self.back_engine.measure.last_on_scale)[0] \
+                                                                    + 1 - self.back_engine.settings.b_offs))
 
-            self.main_view.numberofelementsonscaleTextField.setText("%1i" % (np.sum(self.back_engine.measure.last_on_scale) -\
+            self.main_view.numberofelementsonscaleTextField.setText(
+                "%1i" % (np.sum(self.back_engine.measure.last_on_scale) -\
                                                                     self.back_engine.settings.b_offs))
 
             list_toAdd = np.where((self.back_engine.measure.current_on_scale -
