@@ -26,7 +26,7 @@ class MainController(QObject):
 
         # Start-up function
         self.main_view.clear()
-        # self.startup_function()
+        # self.startup_function() # Why is startup function disabled?
 
         # Make visible the GUI
         self.main_view.show()
@@ -47,31 +47,33 @@ class MainController(QObject):
         self.main_view.start_button.clicked.connect(self.start_button_pushed)
         self.main_view.save_button.clicked.connect(self.save_button_pushed)
         
-    def startup_function(self):
-        self.measuredweightEditField.setEnabled(False)
-
-        self.main_view.totalelementsEditField.setReadOnly(False)
-        self.main_view.totalelementsEditField.setText("0")
-
-        self.main_view.estimateddeviceprecisionEditField.setReadOnly(False)
-        self.main_view.estimateddeviceprecisionEditField.setText("0.1")
-
-        self.main_view.measuredweightEditField.setReadOnly(False)
-        self.main_view.measuredweightEditField.setText("")
-
-        self.main_view.measurementsdoneGauge.setEnabled(False)
-        #self.main_view.measurementsdoneGauge.Limits = [0 100];
-
-        self.main_view.start_button.setEnabled(True)
-        self.main_view.save_button.setEnabled(False)
-
-        self.main_view.offsetelementCheckBox.setCheckable(True)
-        self.main_view.offsetelementCheckBox.setCheckState(QtCore.Qt.Unchecked)
-
-        self.main_view.listofmeasurementsListBox.clear()
-        self.main_view.masselementsonscaleEditField.setText("")
-        self.main_view.numberofelementsonscaleTextField.setText("")
-        self.main_view.weighing_strategy_drop_down.setEnabled(True)
+    # def startup_function(self): # Not used
+    #     self.measuredweightEditField.setEnabled(False)
+    #
+    #     self.main_view.totalelementsEditField.setReadOnly(False)
+    #     self.main_view.totalelementsEditField.setText("0")
+    #
+    #     self.main_view.estimateddeviceprecisionEditField.setReadOnly(False)
+    #     self.main_view.estimateddeviceprecisionEditField.setText("0.1")
+    #
+    #     self.main_view.measuredweightEditField.setReadOnly(False)
+    #     self.main_view.measuredweightEditField.setText("")
+    #
+    #     self.main_view.measurementsdoneGauge.setEnabled(False)
+    #     #self.main_view.measurementsdoneGauge.Limits = [0 100];
+    #
+    #     self.main_view.start_button.setEnabled(True)
+    #     self.main_view.save_button.setEnabled(False)
+    #
+    #     self.main_view.offsetelementCheckBox.setCheckable(True)
+    #     self.main_view.offsetelementCheckBox.setCheckState(QtCore.Qt.Unchecked)
+    #
+    #     self.main_view.listofmeasurementsListBox.clear()
+    #     self.main_view.masselementsonscaleEditField.setEnabled(False)
+    #     self.main_view.masselementsonscaleEditField.setText("")
+    #     self.main_view.numberofelementsonscaleTextField.setEnabled(False)
+    #     self.main_view.numberofelementsonscaleTextField.setText("")
+    #     self.main_view.weighing_strategy_drop_down.setEnabled(True)
 
     def start_button_pushed(self):
         self.main_view.totalelementsEditField.setEnabled(False)
@@ -475,13 +477,16 @@ class MainController(QObject):
     def weighing_strategy_drop_down_value_changed(self):
         value = self.main_view.weighing_strategy_drop_down.currentIndex()
 
-        if (value == self.main_view.weighing_strategy_drop_down.itemData(int(self.main_view.totalelementsEditField.text()))):
-            self.b_ternary = True
+        # if (value == self.main_view.weighing_strategy_drop_down.itemData(int(self.main_view.totalelementsEditField.text()))):
+        if (value == int(self.main_view.totalelementsEditField.text())):
+            # self.b_ternary = True
+            self.back_engine.measure.b_ternary = True
             self.main_view.removeelementsListBoxLabel.setText("negative element(s)")
             self.main_view.addelementsListBoxLabel.setText("positive element(s)")
 
         else:
-            self.b_ternary = False
+            # self.b_ternary = False
+            self.back_engine.measure.b_ternary = False
             self.main_view.removeelementsListBoxLabel.setText("remove element(s)")
             self.main_view.addelementsListBoxLabel.setText("add element(s)")
 
@@ -520,39 +525,45 @@ class MainController(QObject):
                                                   self.back_engine.measure.current_measurement, :]
 
         if self.back_engine.measure.b_ternary:
-            list_toAdd = np.where(self.back_engine.measure.current_on_scale == 1)[0] - \
+        #if self.b_ternary:
+            list_toAdd = np.where(self.back_engine.measure.current_on_scale == 1)[0] + 1 - \
                          self.back_engine.settings.b_offs
 
-            list_toRemove = np.where(self.back_engine.measure.current_on_scale == -1)[0] - \
+            list_toRemove = np.where(self.back_engine.measure.current_on_scale == -1)[0] + 1 - \
                             self.back_engine.settings.b_offs
 
             self.main_view.masselementsonscaleEditField.setText(
-                "%s | %s" % (-(np.where(self.back_engine.measure.last_on_scale == -1)[0] -
-                               self.back_engine.settings.b_offs),
-                             -(np.where(self.back_engine.measure.last_on_scale == 1)[0] -
-                               self.back_engine.settings.b_offs)))
+
+                "%s | %s" % ((np.where(self.back_engine.measure.last_on_scale == -1)[0] -
+                               self.back_engine.settings.b_offs)+1,
+                             (np.where(self.back_engine.measure.last_on_scale == 1)[0] -
+                               self.back_engine.settings.b_offs)+1))
 
             self.main_view.numberofelementsonscaleTextField.setText(
                 "%1i | %1i" % (np.sum(self.back_engine.measure.last_on_scale < 0),
                                      np.sum(self.back_engine.measure.last_on_scale > 0)))
 
         else:
-            self.main_view.masselementsonscaleEditField.Value = str(self.back_engine.measure.last_on_scale -
-                                                                    self.back_engine.settings.b_offs)
+            ay_massonscale = np.where(self.back_engine.measure.last_on_scale)[0] + 1 -\
+                                                                    self.back_engine.settings.b_offs
 
-            self.main_view.numberofelementsonscaleTextField.Value = str(np.sum(self.back_engine.measure.last_on_scale))
+            self.main_view.masselementsonscaleEditField.setText(str(ay_massonscale))
+
+            self.main_view.numberofelementsonscaleTextField.setText("%1i" % (np.sum(self.back_engine.measure.last_on_scale) -\
+                                                                    self.back_engine.settings.b_offs))
 
             list_toAdd = np.where((self.back_engine.measure.current_on_scale -
-                                   self.back_engine.measure.last_on_scale) == 1)[0] - \
-                         self.back_engine.settings.b_offs
+                                        self.back_engine.measure.last_on_scale) == 1)[0] + 1 -\
+                              self.back_engine.settings.b_offs
 
             list_toRemove = np.where((self.back_engine.measure.current_on_scale -
-                                      self.back_engine.measure.last_on_scale) == -1)[0] - \
-                            self.back_engine.settings.b_offs
+                                      self.back_engine.measure.last_on_scale) == -1)[0] + 1 -\
+                                 self.back_engine.settings.b_offs
 
         if len(list_toAdd) > 0:
-            self.main_view.removeelementsListBox.clear()
-            self.main_view.addelementsListBox.addItems(str(list_toAdd[0]))
+            self.main_view.addelementsListBox.clear()
+            # self.main_view.addelementsListBox.addItems(str(list_toAdd[0]))
+            self.main_view.addelementsListBox.addItems(list_toAdd.astype(str))
 
             # self.main_view.addelementsListBox.addItems([str(list_toAdd[0]), str(np.ones((1, np.size([0], 0)))[0][0])])
 
@@ -563,7 +574,9 @@ class MainController(QObject):
     #str(list_toAdd) + "\r\"" + str(np.ones((1, np.size([0], 0)))[0])
         if len(list_toRemove) > 0:
             self.main_view.removeelementsListBox.clear()
-            self.main_view.removeelementsListBox.addItems(str(list_toRemove[0]))
+            # self.main_view.removeelementsListBox.addItems(str(list_toRemove[0]))
+
+            self.main_view.removeelementsListBox.addItems(list_toRemove.astype(str))
 
         else:
             self.main_view.removeelementsListBox.clear()

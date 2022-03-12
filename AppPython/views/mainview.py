@@ -37,21 +37,28 @@ class MainView(QWidget):
         self.measurementsdoneGauge.setEnabled(False)
         self.start_button.setEnabled(True)
         self.save_button.setEnabled(False)
+        self.offsetelementCheckBox.setEnabled(True)
         self.offsetelementCheckBox.setCheckable(True)
         self.offsetelementCheckBox.setCheckState(QtCore.Qt.Unchecked)
 
         self.listofmeasurementsListBox.clear()
+        self.masselementsonscaleEditField.setReadOnly(True)
         self.masselementsonscaleEditField.setText("")
+        self.numberofelementsonscaleTextField.setReadOnly(True)
         self.numberofelementsonscaleTextField.setText("")
         self.weighing_strategy_drop_down.setEnabled(True)
 
         # self.measurementsdoneGauge.maximum = 3
         # self.measurementsdoneGauge.labels = ["", "", "", ""]
+        # self.measurementsdoneGauge.setReadOnly(True)
         self.measurementsdoneGauge.minimum = 0
         self.measurementsdoneGauge.maximum = 5
         self.measurementsdoneGauge.labels = ["0", "1", "2", "3", "4", "5"]
 
         self.measurementsdoneGauge.sl.setValue(0)
+
+        self.addelementsListBox.clear()
+        self.removeelementsListBox.clear()
 
     def setup_gui_settings(self):
         self.setMinimumSize(900, 500)
@@ -82,7 +89,7 @@ class MainView(QWidget):
         self.removeelementsListBoxLabel = QLabel('remove element(s)')
         self.removeelementsListBoxLabel.setStyleSheet("color: red")
 
-        self.addelementsListBoxLabel = QLabel('add elements(s)')
+        self.addelementsListBoxLabel = QLabel('add element(s)')
         self.addelementsListBoxLabel.setStyleSheet("color: green")
 
         self.removeelementsListBox = QListWidget()

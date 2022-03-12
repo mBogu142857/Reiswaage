@@ -229,7 +229,7 @@ class Measure:
         T_old[0] = -1
         T_old[-1] = 1
 
-        for ii in range(1, n-1):
+        for ii in range(1, n):
             T_new = np.row_stack((np.column_stack((-1*np.ones((np.size(T_old, 0), 1)), T_old)),
                                   np.column_stack((np.zeros((np.size(T_old, 0), 1)), T_old)),
                                   np.column_stack((np.ones((np.size(T_old, 0), 1)), T_old))))
