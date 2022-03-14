@@ -3,6 +3,8 @@ from PySide2.QtWidgets import QCheckBox, QLineEdit, QComboBox, QApplication, QWi
 from PySide2.QtCore import Qt
 from PySide2 import QtGui, QtCore
 import sys
+
+
 from .matplotlibwidgetwithtoolbar import MplCanvas_trid
 from .SliderWithTick import LabeledSlider
 
@@ -10,6 +12,8 @@ from .SliderWithTick import LabeledSlider
 class MainView(QWidget):
     def __init__(self):
         super().__init__()
+        self.setStyleSheet("background-color:white;")
+
         self.setup_ui()
 
     def setup_ui(self):
