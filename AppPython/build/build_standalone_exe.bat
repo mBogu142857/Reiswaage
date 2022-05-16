@@ -10,6 +10,6 @@ pyinstaller.exe ^
     --specpath=specs ^
     --distpath=distributables ^
     --workpath=temp ^
-    --name=App ^
+    --name=ReiswaagePythonApp ^
     --noconfirm ^
     ..\mainapplication.py
