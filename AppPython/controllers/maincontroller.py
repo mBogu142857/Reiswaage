@@ -418,13 +418,14 @@ class MainController(QObject):
         :return: None
         """
 
-        # To check if it actually works
-        output_matrix = [self.back_engine.settings.timeStamp,
-                         self.back_engine.measure.binMatrix,
-                         self.back_engine.measure.measValues]
-        file = filedialog.asksaveasfile(filetypes=(("Excel files", "*.xlsx"), ("CSV files", "*.csv")))
-        file.write(output_matrix)
-        file.close()
+        output_matrix = np.column_stack((self.back_engine.measure.timestamp, self.back_engine.measure.bin_matrix,
+                         self.back_engine.measure.measValues))
+
+        file = filedialog.asksaveasfile(mode='w', defaultextension=".csv")
+
+        if file:
+            file.write(str(output_matrix))
+            file.close()
 
         #     [file, path] = uiputfile({'*.xlsx'; '*.csv'}, 'Save file');
         #     writematrix([app.timeStamp, app.binMatrix, app.measValues], fullfile(path, file));
