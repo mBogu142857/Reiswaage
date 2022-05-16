@@ -524,122 +524,123 @@ class MainController(QObject):
 
     def perform_measurement(self):
         # print("Here")
-        self.back_engine.measure.current_measurement = self.main_view.listofmeasurementsListBox.selectedIndexes()[0].row()
+        if len(self.main_view.listofmeasurementsListBox.selectedIndexes()) > 0:
+            self.back_engine.measure.current_measurement = self.main_view.listofmeasurementsListBox.selectedIndexes()[0].row()
 
-        if np.isnan(self.back_engine.measure.measValues[self.back_engine.measure.current_measurement]):
-            self.main_view.measuredweightEditField.setText("")
+            if np.isnan(self.back_engine.measure.measValues[self.back_engine.measure.current_measurement]):
+                self.main_view.measuredweightEditField.setText("")
 
-        else:
-            self.main_view.measuredweightEditField.setText((str(self.back_engine.measure.measValues[
-                self.back_engine.measure.current_measurement][0]))) #+ "%11.4g"
+            else:
+                self.main_view.measuredweightEditField.setText((str(self.back_engine.measure.measValues[
+                    self.back_engine.measure.current_measurement][0]))) #+ "%11.4g"
 
-        self.back_engine.measure.current_on_scale = self.back_engine.measure.bin_matrix[
-                                                  self.back_engine.measure.current_measurement, :]
+            self.back_engine.measure.current_on_scale = self.back_engine.measure.bin_matrix[
+                                                      self.back_engine.measure.current_measurement, :]
 
-        if self.back_engine.measure.b_ternary:
-        #if self.b_ternary:
-            list_toAdd = np.where(self.back_engine.measure.current_on_scale == 1)[0] + 1 - \
-                         self.back_engine.settings.b_offs
+            if self.back_engine.measure.b_ternary:
+            #if self.b_ternary:
+                list_toAdd = np.where(self.back_engine.measure.current_on_scale == 1)[0] + 1 - \
+                             self.back_engine.settings.b_offs
 
-            list_toRemove = np.where(self.back_engine.measure.current_on_scale == -1)[0] + 1 - \
-                            self.back_engine.settings.b_offs
+                list_toRemove = np.where(self.back_engine.measure.current_on_scale == -1)[0] + 1 - \
+                                self.back_engine.settings.b_offs
 
-            self.main_view.masselementsonscaleEditField.setText(
+                self.main_view.masselementsonscaleEditField.setText(
 
-                "%s | %s" % ((np.where(self.back_engine.measure.last_on_scale == -1)[0] -
-                               self.back_engine.settings.b_offs)+1,
-                             (np.where(self.back_engine.measure.last_on_scale == 1)[0] -
-                               self.back_engine.settings.b_offs)+1))
+                    "%s | %s" % ((np.where(self.back_engine.measure.last_on_scale == -1)[0] -
+                                   self.back_engine.settings.b_offs)+1,
+                                 (np.where(self.back_engine.measure.last_on_scale == 1)[0] -
+                                   self.back_engine.settings.b_offs)+1))
 
-            self.main_view.numberofelementsonscaleTextField.setText(
-                "%1i | %1i" % (np.sum(self.back_engine.measure.last_on_scale < 0),
-                                     np.sum(self.back_engine.measure.last_on_scale > 0)))
+                self.main_view.numberofelementsonscaleTextField.setText(
+                    "%1i | %1i" % (np.sum(self.back_engine.measure.last_on_scale < 0),
+                                         np.sum(self.back_engine.measure.last_on_scale > 0)))
 
-        else:
+            else:
 
-            self.main_view.masselementsonscaleEditField.setText(str(np.where(self.back_engine.measure.last_on_scale)[0] \
-                                                                    + 1 - self.back_engine.settings.b_offs))
+                self.main_view.masselementsonscaleEditField.setText(str(np.where(self.back_engine.measure.last_on_scale)[0] \
+                                                                        + 1 - self.back_engine.settings.b_offs))
 
-            self.main_view.numberofelementsonscaleTextField.setText(
-                "%1i" % (np.sum(self.back_engine.measure.last_on_scale) -\
-                                                                    self.back_engine.settings.b_offs))
+                self.main_view.numberofelementsonscaleTextField.setText(
+                    "%1i" % (np.sum(self.back_engine.measure.last_on_scale) -\
+                                                                        self.back_engine.settings.b_offs))
 
-            list_toAdd = np.where((self.back_engine.measure.current_on_scale -
-                                        self.back_engine.measure.last_on_scale) == 1)[0] + 1 -\
-                              self.back_engine.settings.b_offs
+                list_toAdd = np.where((self.back_engine.measure.current_on_scale -
+                                            self.back_engine.measure.last_on_scale) == 1)[0] + 1 -\
+                                  self.back_engine.settings.b_offs
 
-            list_toRemove = np.where((self.back_engine.measure.current_on_scale -
-                                      self.back_engine.measure.last_on_scale) == -1)[0] + 1 -\
-                                 self.back_engine.settings.b_offs
+                list_toRemove = np.where((self.back_engine.measure.current_on_scale -
+                                          self.back_engine.measure.last_on_scale) == -1)[0] + 1 -\
+                                     self.back_engine.settings.b_offs
 
-        if len(list_toAdd) > 0:
-            self.main_view.addelementsListBox.clear()
-            # self.main_view.addelementsListBox.addItems(str(list_toAdd[0]))
-            self.main_view.addelementsListBox.addItems(list_toAdd.astype(str))
+            if len(list_toAdd) > 0:
+                self.main_view.addelementsListBox.clear()
+                # self.main_view.addelementsListBox.addItems(str(list_toAdd[0]))
+                self.main_view.addelementsListBox.addItems(list_toAdd.astype(str))
 
-            # self.main_view.addelementsListBox.addItems([str(list_toAdd[0]), str(np.ones((1, np.size([0], 0)))[0][0])])
+                # self.main_view.addelementsListBox.addItems([str(list_toAdd[0]), str(np.ones((1, np.size([0], 0)))[0][0])])
 
-        else:
-            self.main_view.addelementsListBox.clear()
-            # self.main_view.addelementsListBox.setText("")
+            else:
+                self.main_view.addelementsListBox.clear()
+                # self.main_view.addelementsListBox.setText("")
 
-    #str(list_toAdd) + "\r\"" + str(np.ones((1, np.size([0], 0)))[0])
-        if len(list_toRemove) > 0:
-            self.main_view.removeelementsListBox.clear()
-            # self.main_view.removeelementsListBox.addItems(str(list_toRemove[0]))
+        #str(list_toAdd) + "\r\"" + str(np.ones((1, np.size([0], 0)))[0])
+            if len(list_toRemove) > 0:
+                self.main_view.removeelementsListBox.clear()
+                # self.main_view.removeelementsListBox.addItems(str(list_toRemove[0]))
 
-            self.main_view.removeelementsListBox.addItems(list_toRemove.astype(str))
+                self.main_view.removeelementsListBox.addItems(list_toRemove.astype(str))
 
-        else:
-            self.main_view.removeelementsListBox.clear()
+            else:
+                self.main_view.removeelementsListBox.clear()
 
 
-        # function
-        # performMeasurement(app)
-        # app.currMsrmt = app.listofmeasurementsListBox.Value;
-        #
-        # if isnan(app.measValues(app.currMsrmt))
-        #     app.measuredweightEditField.Value = '';
-        # else
-        #     app.measuredweightEditField.Value = num2str(app.measValues(app.currMsrmt), '%11.4g');
-        # end
-        #
-        # app.currentonscale = app.binMatrix(app.currMsrmt,:);
-        #
-        # if app.b_ternary
-        #     list_toAdd = find(app.currentonscale == 1) - app.b_offs
-        #     ';
-        #     list_toRemove = find(app.currentonscale == -1) - app.b_offs
-        #     ';
-        #
-        #     app.masselementsonscaleEditField.Value = ...
-        #     sprintf('%s | %s', ...
-        #     num2str(-(find(app.lastonscale == -1) - app.b_offs')), ...
-        #     num2str(-(find(app.lastonscale == 1) - app.b_offs
-        #     ')));
-        #     app.numberofelementsonscaleTextField.Value = sprintf('%1i | %1i', sum(app.lastonscale < 0),
-        #                                                          sum(app.lastonscale > 0));
-        #
-        #     else
-        #     app.masselementsonscaleEditField.Value = num2str(find(app.lastonscale) - app.b_offs);
-        #     app.numberofelementsonscaleTextField.Value = num2str(sum(app.lastonscale));
-        #
-        #     list_toAdd = find((app.currentonscale - app.lastonscale) == 1) - app.b_offs
-        #     ';
-        #     list_toRemove = find((app.currentonscale - app.lastonscale) == -1) - app.b_offs
-        #     ';
-        #     end
-        #
-        #     if isempty(list_toAdd)
-        #     app.addelementsListBox.Items = {};
-        #     else
-        #     app.addelementsListBox.Items = mat2cell(num2str(list_toAdd), ones(1, size(list_toAdd, 1)));
-        #     end
-        #
-        #     if isempty(list_toRemove)
-        #     app.removeelementsListBox.Items = {};
-        #     else
-        #     app.removeelementsListBox.Items = mat2cell(num2str(list_toRemove), ones(1, size(list_toRemove, 1)));
-        #     end
-        #
-        #     end
+            # function
+            # performMeasurement(app)
+            # app.currMsrmt = app.listofmeasurementsListBox.Value;
+            #
+            # if isnan(app.measValues(app.currMsrmt))
+            #     app.measuredweightEditField.Value = '';
+            # else
+            #     app.measuredweightEditField.Value = num2str(app.measValues(app.currMsrmt), '%11.4g');
+            # end
+            #
+            # app.currentonscale = app.binMatrix(app.currMsrmt,:);
+            #
+            # if app.b_ternary
+            #     list_toAdd = find(app.currentonscale == 1) - app.b_offs
+            #     ';
+            #     list_toRemove = find(app.currentonscale == -1) - app.b_offs
+            #     ';
+            #
+            #     app.masselementsonscaleEditField.Value = ...
+            #     sprintf('%s | %s', ...
+            #     num2str(-(find(app.lastonscale == -1) - app.b_offs')), ...
+            #     num2str(-(find(app.lastonscale == 1) - app.b_offs
+            #     ')));
+            #     app.numberofelementsonscaleTextField.Value = sprintf('%1i | %1i', sum(app.lastonscale < 0),
+            #                                                          sum(app.lastonscale > 0));
+            #
+            #     else
+            #     app.masselementsonscaleEditField.Value = num2str(find(app.lastonscale) - app.b_offs);
+            #     app.numberofelementsonscaleTextField.Value = num2str(sum(app.lastonscale));
+            #
+            #     list_toAdd = find((app.currentonscale - app.lastonscale) == 1) - app.b_offs
+            #     ';
+            #     list_toRemove = find((app.currentonscale - app.lastonscale) == -1) - app.b_offs
+            #     ';
+            #     end
+            #
+            #     if isempty(list_toAdd)
+            #     app.addelementsListBox.Items = {};
+            #     else
+            #     app.addelementsListBox.Items = mat2cell(num2str(list_toAdd), ones(1, size(list_toAdd, 1)));
+            #     end
+            #
+            #     if isempty(list_toRemove)
+            #     app.removeelementsListBox.Items = {};
+            #     else
+            #     app.removeelementsListBox.Items = mat2cell(num2str(list_toRemove), ones(1, size(list_toRemove, 1)));
+            #     end
+            #
+            #     end
