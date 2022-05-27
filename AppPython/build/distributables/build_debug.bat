@@ -1,2 +1,2 @@
-App.exe
+ReiswaagePythonApp.exe
 pause

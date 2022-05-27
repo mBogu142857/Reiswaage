@@ -6,7 +6,7 @@ import copy
 
 class Measure:
     def __init__(self, bin_matrix: int = [], measValues: float = [], timestamp: str = [],
-                 linRegRes: float = [], current_on_scale: int = 0, last_on_scale: int = 0,
+                 linRegRes: float = [], current_on_scale: int = -1, last_on_scale: int = 0,
                  B_out: int = [], sorted_binMtrx: int = [], T_out: int = [],
                  current_measurement: int = 0, measurements_idx: int = 0, color_tot_values=[],
                  color_evaluation_values=[], b_ternary: bool = False):
@@ -94,8 +94,8 @@ class Measure:
         self.linRegRes[:] = np.NaN
 
 
-        self.color_tot_values = 0.8 * np.array(plt.cm.hsv(np.size(self.measValues)))
-        self.color_evaluation_values = 0.8 * np.array(plt.cm.hsv(np.size(self.bin_matrix, 1) + 1))
+        self.color_tot_values = 0.8 * np.array(plt.cm.hsv(np.arange(np.size(self.measValues))))
+        self.color_evaluation_values = 0.8 * np.array(plt.cm.hsv(np.arange(np.size(self.bin_matrix, 0))))
         self.last_on_scale = np.zeros((1, np.size(self.bin_matrix, 1)))
 
         #     function

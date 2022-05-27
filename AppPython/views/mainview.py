@@ -3,11 +3,11 @@ from PySide2.QtWidgets import QCheckBox, QLineEdit, QComboBox, QApplication, QWi
 from PySide2.QtCore import Qt
 from PySide2 import QtGui, QtCore
 import sys
+import copy
 
-
-from .matplotlibwidgetwithtoolbar import MplCanvas_trid
+from .matplotlibwidget import MplWidget
 from .SliderWithTick import LabeledSlider
-
+from .plotObject import AxesObject
 
 class MainView(QWidget):
     def __init__(self):
@@ -52,9 +52,6 @@ class MainView(QWidget):
         self.numberofelementsonscaleTextField.setText("")
         self.weighing_strategy_drop_down.setEnabled(True)
 
-        # self.measurementsdoneGauge.maximum = 3
-        # self.measurementsdoneGauge.labels = ["", "", "", ""]
-        # self.measurementsdoneGauge.setReadOnly(True)
         self.measurementsdoneGauge.minimum = 0
         self.measurementsdoneGauge.maximum = 5
         self.measurementsdoneGauge.labels = ["0", "1", "2", "3", "4", "5"]
@@ -63,6 +60,9 @@ class MainView(QWidget):
 
         self.addelementsListBox.clear()
         self.removeelementsListBox.clear()
+        self.plotAx1.canvas.ax.clear()
+        self.plotAx2.canvas.ax.clear()
+        self.plotAx3.canvas.ax.clear()
 
     def setup_gui_settings(self):
         self.setMinimumSize(900, 500)
@@ -106,12 +106,29 @@ class MainView(QWidget):
         self.measuredweightEditField = QLineEdit()
         self.listofmeasurementsListBox = QListWidget()
         self.measurementsdoneGauge = LabeledSlider(orientation=Qt.Vertical) # QSlider(Qt.Vertical)#SliderCustom(Qt.Vertical)
-        self.plot = MplCanvas_trid()
+        self.plotAx1 = MplWidget()
+        self.plotAx2 = MplWidget()
+        self.plotAx3 = MplWidget()
+        self.plotAx1_content = copy.deepcopy(AxesObject())
+        self.plotAx2_content = copy.deepcopy(AxesObject())
+        self.plotAx3_content = copy.deepcopy(AxesObject())
+        self.plotAx3_2_content = copy.deepcopy(AxesObject())
+        self.plotAx4_1_content = copy.deepcopy(AxesObject())
+        self.plotAx4_2_content = copy.deepcopy(AxesObject())
+
 
     def modify_widgets(self):
-        self.plot.ax1 = self.plot.add_subplot_bid(311)
-        self.plot.ax2 = self.plot.add_subplot_bid(312)
-        self.plot.ax3 = self.plot.add_subplot_bid(313)
+        self.plotAx1.canvas.ax.set_xlabel("###############")
+        self.plotAx1.canvas.ax.set_ylabel("###############")
+        self.plotAx1.canvas.ax.set_title("#################")
+
+        self.plotAx2.canvas.ax.set_xlabel("###############")
+        self.plotAx2.canvas.ax.set_ylabel("###############")
+        self.plotAx2.canvas.ax.set_title("#################")
+
+        self.plotAx3.canvas.ax.set_xlabel("###############")
+        self.plotAx3.canvas.ax.set_ylabel("###############")
+        self.plotAx3.canvas.ax.set_title("#################")
 
     def create_layouts(self):
         self.layout = QGridLayout()  # GRID LAYOUT
@@ -122,6 +139,7 @@ class MainView(QWidget):
         self.layout_3 = QVBoxLayout()
         self.layout_4 = QHBoxLayout()
         self.layout_7 = QVBoxLayout()
+        self.layoutPlot = QVBoxLayout()
 
     def add_widgets_to_layouts(self):
         self.layout.addWidget(self.totalelementsLabel, 0, 0)  # Note the Row Column coordinates
@@ -168,7 +186,10 @@ class MainView(QWidget):
 
         self.layout.addLayout(self.layout_8, 7, 0, 1, 3)
 
-        self.layout_3.addWidget(self.plot)
+        self.layoutPlot.addWidget(self.plotAx1)
+        self.layoutPlot.addWidget(self.plotAx2)
+        self.layoutPlot.addWidget(self.plotAx3)
+        self.layout_3.addLayout(self.layoutPlot)
 
         self.layout_4.addLayout(self.layout)
         self.layout_4.addLayout(self.layout_3)
