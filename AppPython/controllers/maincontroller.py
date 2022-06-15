@@ -48,7 +48,7 @@ class MainController(QObject):
         self.main_view.start_button.clicked.connect(self.start_button_pushed)
         self.main_view.save_button.clicked.connect(self.save_button_pushed)
         self.main_view.listofmeasurementsListBox.itemSelectionChanged.connect(self.list_of_measurements_value_changed)
-        
+
     def start_button_pushed(self):
         self.main_view.totalelementsEditField.setEnabled(False)
         self.main_view.estimateddeviceprecisionEditField.setEnabled(False)
@@ -69,7 +69,7 @@ class MainController(QObject):
             b_offs = 1
 
         est_prec = float(self.main_view.estimateddeviceprecisionEditField.text())
-        self.back_engine.measure.k_strat = self.main_view.weighing_strategy_drop_down.currentIndex()+1
+        self.back_engine.measure.k_strat = self.main_view.weighing_strategy_drop_down.currentIndex() + 1
 
         self.back_engine.measure.elem_list = [self.main_view.weighing_strategy_drop_down.itemText(i) for i
                                               in range(self.main_view.weighing_strategy_drop_down.count())]
@@ -88,7 +88,7 @@ class MainController(QObject):
         self.main_view.listofmeasurementsListBox.addItems(ListItems)
 
         self.main_view.measurementsdoneGauge.maximum = int(len(ListItems))
-        self.main_view.measurementsdoneGauge.labels = [str(x) for x in range(0, int(len(ListItems))+1)]
+        self.main_view.measurementsdoneGauge.labels = [str(x) for x in range(0, int(len(ListItems)) + 1)]
         self.main_view.measurementsdoneGauge.sl.setValue(0)
 
         self.main_view.listofmeasurementsListBox.setCurrentRow(0)
@@ -118,7 +118,7 @@ class MainController(QObject):
 
         self.main_view.plotAx2.canvas.ax.plot(self.main_view.plotAx2_content.XData,
                                               self.main_view.plotAx2_content.YData, 'r-')
-        
+
         self.main_view.plotAx2.canvas.ax.set_xlabel("# measurement")
         self.main_view.plotAx2.canvas.ax.set_title("element value difference to initial value")
         self.main_view.plotAx2.canvas.ax.set_ylabel("m - m_0")
@@ -136,7 +136,7 @@ class MainController(QObject):
         self.main_view.plotAx3_2_content.XData = np.array([np.NaN, np.NaN])
         self.main_view.plotAx3_2_content.YData = np.array([1, 1]) * self.back_engine.settings.est_prec / 2
 
-        self.main_view.plotAx3.canvas.ax.scatter(self.main_view.plotAx3_content.XData, 
+        self.main_view.plotAx3.canvas.ax.scatter(self.main_view.plotAx3_content.XData,
                                                  self.main_view.plotAx3_content.YData,
                                                  s=12, alpha=.5)
 
@@ -203,7 +203,8 @@ class MainController(QObject):
 
         self.list_of_measurements_value_changed()
         self.back_engine.measure.measurements_idx = np.column_stack((self.back_engine.measure.measurements_idx,
-                                                    np.sum(~np.isnan(self.back_engine.measure.measValues))))
+                                                                     np.sum(~np.isnan(
+                                                                         self.back_engine.measure.measValues))))
 
         self.perform_measurement()
         self.plot_current_results()
@@ -219,10 +220,10 @@ class MainController(QObject):
 
         # Left matrix division
         this_linRegRes, resid, rank, s = np.linalg.lstsq(this_bin_matrix, this_meas_data)
-        self.back_engine.measure.linRegRes[:, lm] = this_linRegRes
+        self.back_engine.measure.linRegRes[:, [lm]] = this_linRegRes
 
-        result_Matrix = this_bin_matrix.T * this_linRegRes
-        Delta_totMass = (this_meas_data - result_Matrix.T)
+        result_Matrix = np.matmul(this_bin_matrix, this_linRegRes)  # this_bin_matrix * this_linRegRes
+        Delta_totMass = (this_meas_data - result_Matrix)
 
         lw = self.main_view.listofmeasurementsListBox
         items = []
@@ -243,80 +244,81 @@ class MainController(QObject):
 
         self.main_view.plotAx1_content.XData = items[np.where(perfMeas > 0)]
         self.main_view.plotAx1_content.YData = Delta_totMass
-        self.main_view.plotAx1_content.CData = np.column_stack((np.multiply(abs(Delta_totMass) >
-                                                                            self.back_engine.settings.est_prec / 2, 1)[0],
-                                                                            np.zeros((np.size(Delta_totMass, 1), 2))))
+        if np.size(self.main_view.plotAx1_content.XData) > 0 and np.size(self.main_view.plotAx1_content.YData) > 0:
+            self.main_view.plotAx1_content.CData = np.column_stack((np.multiply(abs(Delta_totMass) >
+                                                                                self.back_engine.settings.est_prec / 2,
+                                                                                1)[0],
+                                                                    np.zeros((np.size(Delta_totMass, 1), 2))))
 
-        self.main_view.plotAx1.canvas.ax.scatter(self.main_view.plotAx1_content.XData,
-                                                 self.main_view.plotAx1_content.YData, c=self.main_view.plotAx1_content.CData)
+            self.main_view.plotAx1.canvas.ax.scatter(self.main_view.plotAx1_content.XData,
+                                                     self.main_view.plotAx1_content.YData,
+                                                     c=self.main_view.plotAx1_content.CData)
 
-        self.main_view.plotAx1.canvas.ax.set_xlabel("# measurement")
-        self.main_view.plotAx1.canvas.ax.set_ylabel("residuals")
-        self.main_view.plotAx1.canvas.ax.set_title(("| %2.3g |" % this_linRegRes))
-        self.main_view.plotAx1.canvas.draw()
+            self.main_view.plotAx1.canvas.ax.set_xlabel("# measurement")
+            self.main_view.plotAx1.canvas.ax.set_ylabel("residuals")
+            # self.main_view.plotAx1.canvas.ax.set_title(("| %2.3g |" % this_linRegRes))
+            self.main_view.plotAx1.canvas.draw()
 
-        self.main_view.plotAx2.canvas.ax.clear()
-        self.main_view.plotAx2.canvas.ax.set_xlabel("# measurement")
-        self.main_view.plotAx2.canvas.ax.set_title("element value difference to initial value")
-        self.main_view.plotAx2.canvas.ax.set_ylabel("m - m_0")
+            self.main_view.plotAx2.canvas.ax.clear()
+            self.main_view.plotAx2.canvas.ax.set_xlabel("# measurement")
+            self.main_view.plotAx2.canvas.ax.set_title("element value difference to initial value")
+            self.main_view.plotAx2.canvas.ax.set_ylabel("m - m_0")
 
-        self.main_view.plotAx2_content.Color = np.zeros((np.size(self.back_engine.measure.bin_matrix, 0), 3))
-        for jj in range(0, np.size(self.back_engine.measure.bin_matrix, 1)):
-            if lm == 1:
-                self.main_view.plotAx2_content.Color[jj, :] = self.back_engine.measure.color_evaluation_values[jj, 1:]
+            self.main_view.plotAx2_content.Color = np.zeros((np.size(self.back_engine.measure.bin_matrix, 0), 3))
+            for jj in range(0, np.size(self.back_engine.measure.bin_matrix, 1)):
+                if lm == 1:
+                    self.main_view.plotAx2_content.Color[jj, :] = self.back_engine.measure.color_evaluation_values[jj,
+                                                                  1:]
 
-            self.main_view.plotAx2_content.XData = np.column_stack((self.main_view.plotAx2_content.XData, lm))
-            self.main_view.plotAx2_content.YData = np.column_stack((self.main_view.plotAx2_content.YData,
-                                                                    self.back_engine.measure.linRegRes[jj, lm] - \
-                                                                    self.back_engine.measure.linRegRes[jj, 0]))
+                self.main_view.plotAx2_content.XData = np.row_stack((self.main_view.plotAx2_content.XData, lm))
+                self.main_view.plotAx2_content.YData = np.row_stack((self.main_view.plotAx2_content.YData,
+                                                                     self.back_engine.measure.linRegRes[jj, lm] - \
+                                                                     self.back_engine.measure.linRegRes[jj, 0]))
 
-        self.main_view.plotAx2.canvas.ax.plot(self.main_view.plotAx2_content.XData[0],
-                                              self.main_view.plotAx2_content.YData[0], 'r-')
-        self.main_view.plotAx2.canvas.draw()
+            self.main_view.plotAx2.canvas.ax.plot(self.main_view.plotAx2_content.XData,
+                                                  self.main_view.plotAx2_content.YData)
+            self.main_view.plotAx2.canvas.draw()
 
-        self.main_view.plotAx3.canvas.ax.clear()
-        self.main_view.plotAx3.canvas.ax.set_xlabel("measurement value")
-        self.main_view.plotAx3.canvas.ax.set_ylabel("residuals")
-        self.main_view.plotAx3.canvas.ax.set_title("Residual vs total mass")
+            self.main_view.plotAx3.canvas.ax.clear()
+            self.main_view.plotAx3.canvas.ax.set_xlabel("measurement value")
+            self.main_view.plotAx3.canvas.ax.set_ylabel("residuals")
+            self.main_view.plotAx3.canvas.ax.set_title("Residual vs total mass")
 
-        self.main_view.plotAx3_content.XData = [0, np.size(self.back_engine.measure.bin_matrix, 0) + 1]
-        self.main_view.plotAx3_content.YData = np.array([1, 1]) * self.back_engine.settings.est_prec / 2
-        self.main_view.plotAx3.canvas.ax.plot(self.main_view.plotAx3_content.XData,
-                                              self.main_view.plotAx3_content.YData, 'r:',
-                                              self.main_view.plotAx3_content.XData,
-                                              -self.main_view.plotAx3_content.YData, 'r:')
+            self.main_view.plotAx3_content.XData = [0, np.size(self.back_engine.measure.bin_matrix, 0) + 1]
+            self.main_view.plotAx3_content.YData = np.array([1, 1]) * self.back_engine.settings.est_prec / 2
+            self.main_view.plotAx3.canvas.ax.plot(self.main_view.plotAx3_content.XData,
+                                                  self.main_view.plotAx3_content.YData, 'r:',
+                                                  self.main_view.plotAx3_content.XData,
+                                                  -self.main_view.plotAx3_content.YData, 'r:')
 
+            self.main_view.plotAx3_content.XData = this_meas_data
+            self.main_view.plotAx3_content.YData = Delta_totMass
+            self.main_view.plotAx3_content.CData = (self.back_engine.measure.color_tot_values[np.where(perfMeas > 0)][
+                0])[1:]
 
-        self.main_view.plotAx3_content.XData = this_meas_data
-        self.main_view.plotAx3_content.YData = Delta_totMass
-        self.main_view.plotAx3_content.CData = (self.back_engine.measure.color_tot_values[np.where(perfMeas > 0)][0])[1:]
+            self.main_view.plotAx3_2_content.XData = this_meas_data[-1]
+            self.main_view.plotAx3_2_content.YData = Delta_totMass[-1]
+            self.main_view.plotAx3_2_content.CData = self.back_engine.measure.color_tot_values[lm, 1:]
 
-        self.main_view.plotAx3_2_content.XData = this_meas_data[-1]
-        self.main_view.plotAx3_2_content.YData = Delta_totMass[-1]
-        self.main_view.plotAx3_2_content.CData = self.back_engine.measure.color_tot_values[lm, 1:]
+            if ~(self.main_view.plotAx4_1_content.XData == self.main_view.plotAx3_content.XLim):
+                self.main_view.plotAx4_1_content.XData = self.main_view.plotAx3_content.XLim
+                self.main_view.plotAx4_2_content.XData = self.main_view.plotAx3_content.XLim
 
-        if ~(self.main_view.plotAx4_1_content.XData == self.main_view.plotAx3_content.XLim):
-            self.main_view.plotAx4_1_content.XData = self.main_view.plotAx3_content.XLim
-            self.main_view.plotAx4_2_content.XData = self.main_view.plotAx3_content.XLim
+            self.main_view.plotAx3.canvas.ax.scatter(self.main_view.plotAx3_content.XData,
+                                                     self.main_view.plotAx3_content.YData,
+                                                     c=col.hsv_to_rgb(self.main_view.plotAx3_content.CData))
 
-        self.main_view.plotAx3.canvas.ax.scatter(self.main_view.plotAx3_content.XData,
-                                                 self.main_view.plotAx3_content.YData,
-                                                 c=col.hsv_to_rgb(self.main_view.plotAx3_content.CData))
+            self.main_view.plotAx3.canvas.ax.scatter(self.main_view.plotAx3_2_content.XData,
+                                                     self.main_view.plotAx3_2_content.YData,
+                                                     c=col.hsv_to_rgb(self.main_view.plotAx3_2_content.CData))
 
-        self.main_view.plotAx3.canvas.ax.scatter(self.main_view.plotAx3_2_content.XData,
-                                              self.main_view.plotAx3_2_content.YData,
-                                              c=col.hsv_to_rgb(self.main_view.plotAx3_2_content.CData))
-
-        # self.main_view.plotAx3.canvas.ax.plot(self.main_view.plotAx4_1_content.XData,
-        #                                       self.main_view.plotAx4_1_content.YData)
-        #
-        # self.main_view.plotAx3.canvas.ax.plot(self.main_view.plotAx4_2_content.XData,
-        #                                       self.main_view.plotAx4_2_content.YData)
-        self.main_view.plotAx3.canvas.ax.set_xlim([0, 1])
-        self.main_view.plotAx3.canvas.draw()
-
-
-
+            # self.main_view.plotAx3.canvas.ax.plot(self.main_view.plotAx4_1_content.XData,
+            #                                       self.main_view.plotAx4_1_content.YData)
+            #
+            # self.main_view.plotAx3.canvas.ax.plot(self.main_view.plotAx4_2_content.XData,
+            #                                       self.main_view.plotAx4_2_content.YData)
+            self.main_view.plotAx3.canvas.ax.set_xlim([0, 1])
+            self.main_view.plotAx3.canvas.draw()
 
     def list_of_measurements_value_changed(self):
         # self.back_engine.compute_measure()
@@ -326,8 +328,8 @@ class MainController(QObject):
         self.back_engine.measure.measurements_idx = np.column_stack((self.back_engine.measure.measurements_idx,
                                                                      np.sum(~np.isnan(
                                                                          self.back_engine.measure.measValues))))
-        # self.perform_measurement()
-        # self.plot_current_results()
+        self.perform_measurement()
+        self.plot_current_results()
 
     def save_button_pushed(self):
         """
@@ -336,14 +338,13 @@ class MainController(QObject):
         """
 
         output_matrix = np.column_stack((self.back_engine.measure.timestamp, self.back_engine.measure.bin_matrix,
-                         self.back_engine.measure.measValues))
+                                         self.back_engine.measure.measValues))
 
         file = filedialog.asksaveasfile(mode='w', defaultextension=".csv")
 
         if file:
             file.write(str(output_matrix))
             file.close()
-
 
     def reset_button_pushed(self):
         """
@@ -361,7 +362,7 @@ class MainController(QObject):
 
         nCHk_ItmData = np.linspace(1, n + 1, n + 1)
         nCHk_List = []
-        for i in range(0, len(nCHk_ItmData)-2):
+        for i in range(0, len(nCHk_ItmData) - 2):
             k_in = nCHk_ItmData[i]
             nCHk_List.append("N = (%1iCH%1i)+1 = %1i" % (n, k_in, comb(n, k_in, exact=True) + 1))
 
@@ -372,14 +373,12 @@ class MainController(QObject):
         for ind in range(0, len(nCHk_ItmData)):
             self.main_view.weighing_strategy_drop_down.addItem(nCHk_List[ind], nCHk_ItmData[ind])
 
-
     def measured_weight_edit_field_value_changing(self):
         """
 
         :return:
         """
         pass
-
 
     def weighing_strategy_drop_down_value_changed(self):
         value = self.main_view.weighing_strategy_drop_down.currentIndex()
@@ -396,14 +395,16 @@ class MainController(QObject):
 
     def perform_measurement(self):
         if len(self.main_view.listofmeasurementsListBox.selectedIndexes()) > 0:
-            self.back_engine.measure.current_measurement = self.main_view.listofmeasurementsListBox.selectedIndexes()[0].row()
+            self.back_engine.measure.current_measurement = self.main_view.listofmeasurementsListBox.selectedIndexes()[
+                0].row()
 
             if np.isnan(self.back_engine.measure.measValues[self.back_engine.measure.current_measurement - 1]):
                 self.main_view.measuredweightEditField.setText("")
 
             else:
                 self.main_view.measuredweightEditField.setText((str(self.back_engine.measure.measValues[
-                    self.back_engine.measure.current_measurement - 1][0]))) #+ "%11.4g"
+                                                                        self.back_engine.measure.current_measurement - 1][
+                                                                        0])))  # + "%11.4g"
 
             self.back_engine.measure.current_on_scale = self.back_engine.measure.bin_matrix[
                                                         self.back_engine.measure.current_measurement - 1, :]
@@ -417,30 +418,31 @@ class MainController(QObject):
 
                 self.main_view.masselementsonscaleEditField.setText(
                     "%s | %s" % ((np.where(self.back_engine.measure.last_on_scale == -1)[0] -
-                                   self.back_engine.settings.b_offs)+1,
+                                  self.back_engine.settings.b_offs) + 1,
                                  (np.where(self.back_engine.measure.last_on_scale == 1)[0] -
-                                   self.back_engine.settings.b_offs)+1))
+                                  self.back_engine.settings.b_offs) + 1))
 
                 self.main_view.numberofelementsonscaleTextField.setText(
                     "%1i | %1i" % (np.sum(self.back_engine.measure.last_on_scale < 0),
-                                         np.sum(self.back_engine.measure.last_on_scale > 0)))
+                                   np.sum(self.back_engine.measure.last_on_scale > 0)))
 
             else:
 
-                self.main_view.masselementsonscaleEditField.setText(str(np.where(~(self.back_engine.measure.last_on_scale == np.NaN))[0] \
-                                                                        + 1 - self.back_engine.settings.b_offs))
+                self.main_view.masselementsonscaleEditField.setText(
+                    str(np.where(~(self.back_engine.measure.last_on_scale == np.NaN))[0] \
+                        + 1 - self.back_engine.settings.b_offs))
 
                 self.main_view.numberofelementsonscaleTextField.setText(
-                    "%1i" % (np.sum(self.back_engine.measure.last_on_scale) -\
-                                                                        self.back_engine.settings.b_offs))
+                    "%1i" % (np.sum(self.back_engine.measure.last_on_scale) - \
+                             self.back_engine.settings.b_offs))
 
                 list_toAdd = np.where((self.back_engine.measure.current_on_scale -
-                                            self.back_engine.measure.last_on_scale) == 1)[0] + 1 -\
-                                  self.back_engine.settings.b_offs
+                                       self.back_engine.measure.last_on_scale) == 1)[0] + 1 - \
+                             self.back_engine.settings.b_offs
 
                 list_toRemove = np.where((self.back_engine.measure.current_on_scale -
-                                          self.back_engine.measure.last_on_scale) == -1)[0] + 1 -\
-                                     self.back_engine.settings.b_offs
+                                          self.back_engine.measure.last_on_scale) == -1)[0] + 1 - \
+                                self.back_engine.settings.b_offs
 
             if len(list_toAdd) > 0:
                 self.main_view.addelementsListBox.clear()
